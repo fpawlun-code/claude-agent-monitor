@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
+.venv/
+
+# Logs
+*.log
+*.out
+
+# Ollama
+OllamaSetup.exe
+models/
+
+# OS
+.DS_Store
+Thumbs.db
