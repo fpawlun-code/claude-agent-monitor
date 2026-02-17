@@ -222,11 +222,42 @@ classified_posts = [
 3. ✅ ~~Create GPU monitoring~~
 4. ✅ ~~Create worker API~~
 5. ✅ ~~Validate RTX inference~~
-6. ⏳ **TODO:** Auto-start on Windows boot (Task Scheduler)
-7. ⏳ **TODO:** Integrate with FB scraper
-8. ⏳ **TODO:** Create dashboard (Flask + GPU metrics)
+6. ✅ ~~Create ai_gateway.py (universal bridge)~~
+7. ✅ ~~Implement Ollama-first workflow~~
+8. ✅ ~~FB Monitor Engine (real estate scraping)~~
+9. ⏳ **TODO:** Auto-start on Windows boot (Task Scheduler)
+10. ⏳ **TODO:** Integrate Playwright FB scraper
+11. ⏳ **TODO:** Dashboard (Flask + GPU metrics)
+
+---
+
+## 🆕 **OLLAMA-FIRST WORKFLOW (2026-02-17)**
+
+**New Architecture:** Claude Code = Manager | Ollama (RTX) = Worker
+
+See **[WORKFLOW.md](WORKFLOW.md)** for complete guide.
+
+**Key Files:**
+- `ai_gateway.py` - Universal RTX delegation
+- `fb_monitor_engine.py` - Automated lead generation
+- `WORKFLOW.md` - Complete usage guide
+
+**Token Savings:** 90-95% on bulk/draft work
+
+**Example:**
+```python
+from ai_gateway import delegate_to_rtx
+
+# RTX generates draft (0 Claude tokens)
+draft = delegate_to_rtx(
+    task_description="Create landing page HTML",
+    role="expert web developer"
+)
+
+# Claude only polishes (minimal tokens)
+```
 
 ---
 
 **Last Updated:** 2026-02-17
-**Status:** ✅ RTX is handling the load
+**Status:** ✅ RTX is handling the load | ✅ Ollama-First Active

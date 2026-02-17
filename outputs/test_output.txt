@@ -1,0 +1,22 @@
+Here is a simple Python function that adds two numbers, along with a docstring:
+
+```
+def add_numbers(a: int, b: int) -> int:
+    """
+    This function takes two integers as input and returns their sum.
+
+    Args:
+        a (int): The first integer to be added.
+        b (int): The second integer to be added.
+
+    Returns:
+        int: The sum of the two input integers.
+
+    Example:
+        >>> add_numbers(3, 4)
+        7
+    """
+    return a + b
+```
+
+In this function, `a` and `b` are expected to be integers. The function returns their sum as an integer.

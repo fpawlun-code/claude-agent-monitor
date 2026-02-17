@@ -1,0 +1,87 @@
+[
+  {
+    "id": "post_1",
+    "text": "Sprzedam mieszkanie 3 pokoje, 65m2, centrum Szczecin, 450 000 PLN. Kontakt: 555-123-456",
+    "url": "https://facebook.com/groups/test/posts/1",
+    "author": "User1",
+    "timestamp": "2026-02-17T02:47:57.748248",
+    "category": "apartment",
+    "extracted": {
+      "price_pln": 450000,
+      "area_m2": 65,
+      "rooms": 3,
+      "location": "Szczecin, centrum",
+      "phone": "555-123-456",
+      "email": null
+    },
+    "analyzed_at": "2026-02-17T02:48:03.704867"
+  },
+  {
+    "id": "post_2",
+    "text": "Do wynajęcia kawalerka 30m2, Prawobrzeże, 1500 PLN/mc. Tel: 666-789-012",
+    "url": "https://facebook.com/groups/test/posts/2",
+    "author": "User2",
+    "timestamp": "2026-02-17T02:47:57.748248",
+    "category": "apartment",
+    "extracted": {
+      "price_pln": 1500000,
+      "area_m2": 30,
+      "rooms": null,
+      "location": "Prawobrzeże",
+      "phone": "666-789-012",
+      "email": null
+    },
+    "analyzed_at": "2026-02-17T02:48:09.508085"
+  },
+  {
+    "id": "post_3",
+    "text": "Sprzedam dom 150m2, Warszewo, działka 500m2, 890 000 PLN. Email: contact@example.com",
+    "url": "https://facebook.com/groups/test/posts/3",
+    "author": "User3",
+    "timestamp": "2026-02-17T02:47:57.748248",
+    "category": "house",
+    "extracted": {
+      "price_pln": 890000,
+      "area_m2": 150,
+      "rooms": null,
+      "location": "Warszewo",
+      "phone": null,
+      "email": "contact@example.com"
+    },
+    "analyzed_at": "2026-02-17T02:48:15.216204"
+  },
+  {
+    "id": "post_4",
+    "text": "Kupię mieszkanie do 400k, 2-3 pokoje, centrum lub blisko",
+    "url": "https://facebook.com/groups/test/posts/4",
+    "author": "User4",
+    "timestamp": "2026-02-17T02:47:57.748248",
+    "category": "apartment",
+    "extracted": {
+      "price_pln": 400000,
+      "area_m2": null,
+      "rooms": 2,
+      "location": "centrum lub blisko",
+      "phone": null,
+      "email": null
+    },
+    "analyzed_at": "2026-02-17T02:48:20.984898"
+  },
+  {
+    "id": "post_5",
+    "text": "Szukam współlokatora do mieszkania na Pogodnie, 800 PLN/mc",
+    "url": "https://facebook.com/groups/test/posts/5",
+    "author": "User5",
+    "timestamp": "2026-02-17T02:47:57.748248",
+    "category": "apartment",
+    "extracted": {
+      "price_pln": 800,
+      "area_m2": null,
+      "rooms": null,
+      "location": "Pogodnie",
+      "phone": null,
+      "email": null
+    },
+    "analyzed_at": "2026-02-17T02:48:26.695385"
+  }
+]
