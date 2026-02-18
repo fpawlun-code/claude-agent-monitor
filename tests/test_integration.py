@@ -111,14 +111,8 @@ class TestToolkitIntegration:
 
     def test_toolkit_initialization(self):
         """Test toolkit initializes with agent"""
-        # ReactAgent should have LocalToolkit
-        # Note: This may fail if ReactAgent requires parameters
-        try:
-            agent = ReactAgent()
-            assert hasattr(agent, 'toolkit') or hasattr(agent, 'tools')
-        except TypeError:
-            # ReactAgent may require parameters
-            pytest.skip("ReactAgent requires initialization parameters")
+        agent = ReactAgent()
+        assert hasattr(agent, "toolkit") or hasattr(agent, "tools")
 
     def test_file_operations_via_toolkit(self, tmp_path):
         """Test file operations through toolkit"""

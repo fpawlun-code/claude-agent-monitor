@@ -84,54 +84,42 @@ class TestReactAgent:
 
     @pytest.fixture
     def agent(self):
-        """Create ReactAgent instance"""
-        with patch('rtx_agent.QdrantMemory', None, create=True):
-            try:
-                return ReactAgent(model="qwen2.5:7b")
-            except Exception:
-                pytest.skip("ReactAgent initialization failed (dependency issue)")
+        """Create ReactAgent instance with mocked memory (conftest blocks ML imports)."""
+        return ReactAgent(model="qwen2.5:7b")
 
     @pytest.fixture
     def mock_ollama(self):
-        """Mock Ollama API"""
-        with patch('requests.post') as mock_post:
+        """Mock Ollama /api/generate endpoint."""
+        with patch("requests.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {
-                "message": {
-                    "content": "Thought: I should test this.\nAction: read_file(/test.txt)\nObservation: File content"
-                }
+                "response": "Thought: testing\nFinal Answer: done",
+                "done": True,
             }
             mock_response.status_code = 200
             mock_post.return_value = mock_response
             yield mock_post
 
     def test_agent_initialization(self, agent):
-        """Test ReactAgent initializes correctly"""
+        """Test ReactAgent initializes correctly."""
         assert agent.model == "qwen2.5:7b"
         assert agent.toolkit is not None
         assert isinstance(agent.toolkit, LocalToolkit)
 
     def test_react_loop_basic(self, agent, mock_ollama):
-        """Test basic ReAct loop execution"""
-        # This is a simplified test - actual implementation may vary
-        task = "Test task"
-
-        # Agent should process task without errors
-        try:
-            # Note: Actual method name may differ
-            result = agent.run(task) if hasattr(agent, 'run') else None
-            # If run method exists, it should return something
-            if result is not None:
-                assert isinstance(result, (str, dict))
-        except AttributeError:
-            # run method may not exist, skip this test
-            pytest.skip("run method not implemented")
+        """Test basic ReAct loop execution."""
+        result = agent.run("Test task")
+        assert isinstance(result, dict)
+        assert "success" in result
 
     def test_action_parsing(self, agent):
-        """Test parsing actions from ReAct output"""
-        # Test if agent can parse action strings
-        # This depends on actual implementation
-        pass  # TODO: Implement when action parser is available
+        """Test parse_action extracts tool name and args."""
+        text = 'Action: read_file(path="/tmp/test.txt")'
+        parsed = agent.parse_action(text)
+        assert parsed is not None
+        tool_name, kwargs = parsed
+        assert tool_name == "read_file"
+        assert "path" in kwargs
 
 
 class TestSafety:
@@ -172,10 +160,7 @@ class TestIntegration:
 
     @pytest.fixture
     def agent(self):
-        try:
-            return ReactAgent()
-        except Exception:
-            pytest.skip("ReactAgent initialization failed (dependency issue)")
+        return ReactAgent()
 
     def test_file_operations_workflow(self, agent, tmp_path):
         """Test complete file read/write workflow"""
