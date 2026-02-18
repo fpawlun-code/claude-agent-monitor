@@ -26,15 +26,18 @@ DATA_DIR = Path("C:/ClaudeAgent/fb_data")
 DB_PATH = DATA_DIR / "jobs.db"
 SESSION_DIR = DATA_DIR / "browser_session"
 
-# Polish IT freelance groups - public (no login needed to read)
+# Polish IT freelance groups (verified from FB search, public)
 TARGET_GROUPS = [
-    "https://www.facebook.com/groups/szukamprogramisty",
-    "https://www.facebook.com/groups/webmasterzyoferty",
-    "https://www.facebook.com/groups/zleceniait",
-    "https://www.facebook.com/groups/szukamgrafika",
-    "https://www.facebook.com/groups/1545567572348186",  # Praca dla programistów
-    "https://www.facebook.com/groups/freelancerzypl",
-    "https://www.facebook.com/groups/szukamspecjalisty",
+    "https://www.facebook.com/groups/zlecenia.it.grafika",       # Programiści/graficy zlecenia - 13k, 10+/day
+    "https://www.facebook.com/groups/zlecto.wykonawcy.zlecenia.uslugi",  # zlec.to - 66k, 90+/day
+    "https://www.facebook.com/groups/zleceniaofertypracy",       # Zlecenia/Oferty IT - public
+    "https://www.facebook.com/groups/praca.it.wynagrodzenia",    # Praca IT/oferty - 32k
+    "https://www.facebook.com/groups/4007042206190287",          # Szukam programisty/WWW/apps
+    "https://www.facebook.com/groups/grafikimontaz",             # Programiści/Graficy zlecenia
+    "https://www.facebook.com/groups/2657738457741481",          # Oferty/Zlecenia/Usługi - 20k, 90+/day
+    "https://www.facebook.com/groups/copywriterzy",              # Marketing/copywriting/SEO - 24k
+    "https://www.facebook.com/groups/246806639124789",           # Remote Jobs IT - zdalny programista
+    "https://www.facebook.com/groups/876337474198694",           # Zlecenia online WWW/Marketing
 ]
 
 # ── Database ──────────────────────────────────────────────────────────────────
@@ -118,80 +121,99 @@ class FBScraper:
         self.new_posts = []
 
     async def scrape_group(self, page: Page, group_url: str, max_posts=20) -> list:
-        """Scrape posts from a single FB group"""
+        """
+        Scrape posts via GraphQL interception.
+        FB sends post data as JSON to /api/graphql/ - we capture that directly.
+        Much more reliable than HTML parsing.
+        """
+        import hashlib
+        import re
+
         print(f"[FB] Scraping: {group_url}")
         posts = []
+        captured_responses = []
+
+        async def on_response(response):
+            if "/api/graphql/" in response.url:
+                try:
+                    text = await response.text()
+                    captured_responses.append(text)
+                except Exception:
+                    pass
+
+        page.on("response", on_response)
 
         try:
             await page.goto(group_url, wait_until="domcontentloaded", timeout=30000)
-            await human_delay(2000, 4000)
+            await human_delay(3000, 5000)
 
-            # Scroll to load posts
-            await human_scroll(page, times=5)
-            await human_delay(1000, 2000)
+            # Scroll to trigger more feed loads
+            for _ in range(8):
+                await page.evaluate("window.scrollBy(0, Math.floor(Math.random() * 500 + 300))")
+                await asyncio.sleep(1.3)
 
-            # Extract posts - FB uses role="article" for feed items
-            post_elements = await page.query_selector_all('[role="article"]')
-            print(f"[FB] Found {len(post_elements)} post elements")
-
-            for i, elem in enumerate(post_elements[:max_posts]):
-                try:
-                    # Get post text
-                    text_elem = await elem.query_selector('[data-ad-preview="message"]')
-                    if not text_elem:
-                        # Fallback: get all text from article
-                        text = await elem.inner_text()
-                    else:
-                        text = await text_elem.inner_text()
-
-                    text = text.strip()
-                    if len(text) < 30:  # Skip very short posts
-                        continue
-
-                    # Get post URL (timestamp link)
-                    link_elem = await elem.query_selector('a[href*="/posts/"]')
-                    if not link_elem:
-                        link_elem = await elem.query_selector('a[href*="story_fbid"]')
-
-                    post_url = ""
-                    if link_elem:
-                        post_url = await link_elem.get_attribute("href") or ""
-                        if post_url.startswith("/"):
-                            post_url = "https://www.facebook.com" + post_url
-
-                    # Get author
-                    author_elem = await elem.query_selector('a[role="link"] strong')
-                    author = ""
-                    if author_elem:
-                        author = await author_elem.inner_text()
-
-                    # Generate unique ID from URL or text hash
-                    import hashlib
-                    post_id = hashlib.md5((post_url or text[:100]).encode()).hexdigest()[:16]
-
-                    post = {
-                        "id": post_id,
-                        "group_url": group_url,
-                        "author": author,
-                        "text": text[:2000],  # Cap at 2000 chars
-                        "post_url": post_url,
-                        "scraped_at": datetime.now().isoformat()
-                    }
-
-                    is_new = save_post(post)
-                    if is_new:
-                        posts.append(post)
-                        print(f"[FB] New post #{len(posts)}: {text[:60]}...")
-
-                    await human_delay(100, 300)
-
-                except Exception as e:
-                    print(f"[FB] Post parse error: {e}")
-                    continue
+            await human_delay(2000, 3000)
 
         except Exception as e:
-            print(f"[FB] Group scrape error: {e}")
+            print(f"[FB] Navigation error: {e}")
 
+        page.remove_listener("response", on_response)
+
+        # Parse GraphQL responses for post texts
+        seen_texts = set()
+        skip_strings = [
+            'http', 'facebook.com', 'Ka\u017cdy mo\u017ce', 'Widoczna', 'publiczna',
+            'Informacje', 'Dyskusja', 'Multimedia', 'className', 'style', 'color',
+            'fontWeight', 'fontSize', 'span', 'null', 'undefined'
+        ]
+
+        for raw in captured_responses:
+            if '"text"' not in raw and '"message"' not in raw:
+                continue
+
+            # Extract all "text":"..." values - use json.loads for proper unicode decoding
+            matches = re.findall(r'"text"\s*:\s*"((?:[^"\\]|\\.)*)"', raw)
+
+            for m in matches:
+                try:
+                    # Properly decode JSON string (handles \uXXXX, \n, \\, etc.)
+                    text = json.loads(f'"{m}"')
+                except Exception:
+                    text = m.replace('\\n', '\n').replace('\\/', '/')
+
+                if not isinstance(text, str):
+                    continue
+                text = text.strip()
+
+                # Filter: length, skip UI/meta strings
+                if len(text) < 40 or len(text) > 3000:
+                    continue
+                if any(skip in text for skip in skip_strings):
+                    continue
+
+                key = text[:60]
+                if key in seen_texts:
+                    continue
+                seen_texts.add(key)
+
+                post_id = hashlib.md5(text[:100].encode('utf-8', errors='ignore')).hexdigest()[:16]
+
+                post = {
+                    "id": post_id,
+                    "group_url": group_url,
+                    "author": "",
+                    "text": text[:2000],
+                    "post_url": group_url,
+                    "scraped_at": datetime.now().isoformat()
+                }
+
+                is_new = save_post(post)
+                if is_new:
+                    posts.append(post)
+                    if len(posts) >= max_posts:
+                        break
+
+        print(f"[FB] {group_url.split('/')[-1]}: {len(captured_responses)} responses -> {len(posts)} new posts")
         return posts
 
     async def run(self, groups=None, max_posts_per_group=20) -> list:
@@ -237,14 +259,15 @@ class FBScraper:
 async def manual_login():
     """
     Open browser for manual FB login.
-    Session is saved to SESSION_DIR - only needed once.
+    Auto-detects when user is logged in (no ENTER needed).
+    Session saved to SESSION_DIR - only needed once.
     """
     print("="*60)
     print("MANUAL LOGIN MODE")
     print("="*60)
-    print(f"Browser will open. Log into Facebook manually.")
+    print(f"Browser will open. Log into Facebook.")
     print(f"Session saved to: {SESSION_DIR}")
-    print(f"Press ENTER in terminal when done logging in.")
+    print(f"Browser closes automatically after login.")
     print("="*60)
 
     SESSION_DIR.mkdir(parents=True, exist_ok=True)
@@ -258,17 +281,22 @@ async def manual_login():
         page = await browser.new_page()
         await page.goto("https://www.facebook.com/login")
 
-        print("\nWaiting for manual login... (press ENTER when logged in)")
-        input()
+        print("\nWaiting for login... (browser closes automatically)")
 
-        # Verify login
-        current_url = page.url
-        if "facebook.com" in current_url and "login" not in current_url:
-            print("✅ Login successful! Session saved.")
+        # Auto-detect login: wait until URL is no longer /login
+        # Timeout: 5 minutes
+        for _ in range(300):
+            await asyncio.sleep(1)
+            url = page.url
+            if "facebook.com" in url and "/login" not in url and "checkpoint" not in url:
+                print("[OK] Login detected! Saving session...")
+                await asyncio.sleep(2)  # Let cookies settle
+                break
         else:
-            print("⚠️  Check if you're logged in. Session saved anyway.")
+            print("[WARN] Timeout - saving session anyway.")
 
         await browser.close()
+        print("[OK] Session saved. You can now run --scrape.")
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
