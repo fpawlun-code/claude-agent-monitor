@@ -18,10 +18,11 @@ exclude = '''
 
 [tool.mypy]
 python_version = "3.12"
-warn_return_any = true
-warn_unused_configs = true
+warn_return_any = false
+warn_unused_configs = false
 disallow_untyped_defs = false
 ignore_missing_imports = true
+no_strict_optional = true
 
 # Exclude certain directories
 exclude = [

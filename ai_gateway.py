@@ -12,12 +12,13 @@ WORKFLOW:
 SAVINGS: 90-95% token reduction for bulk/draft work
 """
 
-import requests
 import json
 import time
 from datetime import datetime
-from typing import Optional, Dict, Any
 from pathlib import Path
+from typing import Any, Dict, Optional
+
+import requests
 
 
 class LocalAI:
@@ -51,12 +52,12 @@ class LocalAI:
         # Smart cache for read/bash results
         self.enable_cache = enable_cache
         self.cache_ttl = cache_ttl
-        self._cache = {}  # {key: (result, timestamp)}
+        self._cache: Dict[str, Any] = {}  # {key: (result, timestamp)}
         self._cache_hits = 0
         self._cache_misses = 0
 
         # File snapshots for diff mode
-        self._file_snapshots = {}  # {file_path: last_content}
+        self._file_snapshots: Dict[str, str] = {}  # {file_path: last_content}
 
     def _get_cache(self, key: str) -> Optional[str]:
         """Get from cache if exists and not expired"""
@@ -88,7 +89,7 @@ class LocalAI:
             # Remove oldest
             oldest_key = min(self._cache.keys(), key=lambda k: self._cache[k][1])
             del self._cache[oldest_key]
-            self.log(f"[CACHE] Evicted oldest entry")
+            self.log("[CACHE] Evicted oldest entry")
 
         self._cache[key] = (value, time.time())
 
@@ -383,7 +384,7 @@ Format: Return valid JSON only.
             )
         """
         try:
-            cmds_str = "\n".join(f"{i+1}. {cmd}" for i, cmd in enumerate(commands))
+            cmds_str = "\n".join(f"{i + 1}. {cmd}" for i, cmd in enumerate(commands))
             task = f"""Execute multiple bash commands and summarize results:
 
 Commands:
@@ -653,7 +654,7 @@ Return ONLY the commit message, nothing else.
             return "chore: update files"
         except Exception as e:
             self.log(f"[ERROR] delegate_git_commit: {e}", "ERROR")
-            return f"chore: update files"
+            return "chore: update files"
 
     def delegate_pr_description(self, branch: str, base: str = "main") -> str:
         """Generate PR description by analyzing branch changes"""
@@ -681,7 +682,7 @@ Return markdown PR description.
 
             if result.get("success"):
                 desc = result.get("final_answer", "# PR Description\n\nChanges from branch.")
-                self.log(f"[GIT] Generated PR description")
+                self.log("[GIT] Generated PR description")
                 return desc
             return "# PR Description\n\nChanges from branch."
         except Exception as e:
@@ -711,7 +712,7 @@ Return summary.
 
             if result.get("success"):
                 summary = result.get("final_answer", "Recent commits")
-                self.log(f"[GIT] Generated summary")
+                self.log("[GIT] Generated summary")
                 return summary
             return "Recent commits"
         except Exception as e:
@@ -1155,7 +1156,7 @@ if __name__ == "__main__":
         auto_result = claude_delegate_autonomous(task="What is 7 * 8? Just give me the number.", max_iterations=3)
 
         if auto_result["success"]:
-            print(f"[OK] Autonomous task complete")
+            print("[OK] Autonomous task complete")
             print(f"[ANSWER] {auto_result['final_answer']}")
             print(f"[ITERS] {auto_result['iterations']} iterations")
         else:

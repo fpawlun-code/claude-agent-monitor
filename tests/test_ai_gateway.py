@@ -2,9 +2,11 @@
 Test suite for ai_gateway.py
 Tests delegation functions with mocked Ollama API
 """
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from ai_gateway import delegate_to_rtx, LocalAI
-from unittest.mock import Mock, patch, MagicMock
+
+from ai_gateway import LocalAI, delegate_to_rtx
 
 
 class TestDelegation:
@@ -18,10 +20,7 @@ class TestDelegation:
             mock_response.json.return_value = {
                 "model": "qwen2.5:7b",
                 "created_at": "2024-01-01T00:00:00Z",
-                "message": {
-                    "role": "assistant",
-                    "content": "Mock RTX response"
-                },
+                "response": "Mock RTX response",
                 "done": True
             }
             mock_response.status_code = 200

@@ -14,15 +14,15 @@ INTEGRATION:
 Claude → JSON task → rtx_agent.py → autonomous execution → result
 """
 
-import os
-import json
 import argparse
-import subprocess
-import requests
-from pathlib import Path
-from typing import Dict, Any, Optional, List
-from datetime import datetime
+import json
 import re
+import subprocess
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import requests
 
 # ==================== TOOLKIT ====================
 
@@ -131,6 +131,7 @@ class LocalToolkit:
                 r"shutdown",
                 r"reboot",
                 r">.*nul",  # Windows delete
+                r":\(\)\{",  # Fork bomb
             ]
 
             for pattern in dangerous_patterns:
@@ -148,7 +149,7 @@ class LocalToolkit:
                 self.log(f"[WARN] Command failed (code {result.returncode})")
                 return f"EXIT CODE {result.returncode}\n{output}"
 
-            self.log(f"[OK] Command success")
+            self.log("[OK] Command success")
             return output.strip() if output else "SUCCESS (no output)"
 
         except subprocess.TimeoutExpired:
@@ -161,7 +162,7 @@ class LocalToolkit:
         try:
             # Using DuckDuckGo Instant Answer API
             url = "https://api.duckduckgo.com/"
-            params = {"q": query, "format": "json", "no_html": 1, "skip_disambig": 1}
+            params: Dict[str, Any] = {"q": query, "format": "json", "no_html": 1, "skip_disambig": 1}
 
             self.log(f"[SEARCH] Searching: {query}")
 
@@ -298,7 +299,7 @@ class ReactAgent:
         self.max_iterations = max_iterations
 
         self.toolkit = LocalToolkit(safe_mode=safe_mode)
-        self.conversation_history = []
+        self.conversation_history: list[Dict[str, Any]] = []
 
         # Initialize persistent memory (Qdrant + embeddings)
         from memory_system import QdrantMemory
@@ -328,7 +329,7 @@ class ReactAgent:
         tool_name = match.group(1)
         args_str = match.group(2).strip()
 
-        kwargs = {}
+        kwargs: Dict[str, Any] = {}
 
         if not args_str:
             # No arguments
@@ -367,7 +368,7 @@ class ReactAgent:
 
         try:
             tool = self.toolkit.tools[tool_name]
-            result = tool(**kwargs)
+            result = tool(**kwargs)  # type: ignore[operator]
             return result
         except Exception as e:
             return f"ERROR: {str(e)}"
