@@ -1,0 +1,63 @@
+Here are the requested files:
+
+**qdrant_memory.py**
+```python
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct
+import hashlib
+import json
+
+class AgentMemory:
+    def __init__(self, path="./memory"):
+        self.client = QdrantClient(path=path)
+        self._ensure_collection()
+
+    def _ensure_collection(self):
+        # Create collection if not exists
+        try:
+            self.client.get_collection("tasks")
+        except Exception as e:
+            self.client.create_collection("tasks", vectors=True)
+
+    def store(self, task, result):
+        # Store task + result with hash-based vector
+        vector = self._hash_text(task)
+        self.client.upsert_vectors(["tasks"], [vector], {"task": task, "result": result})
+
+    def search_similar(self, query, limit=3):
+        # Find similar past tasks
+        # Return list of {task, result}
+        results = []
+        for vector in self.client.search_vectors("tasks", query, limit):
+            task_id = int(vector.id)
+            task_result = self.client.get_vector("tasks", task_id).payload
+            results.append({"task": task_id, "result": task_result})
+        return results
+
+    def _hash_text(self, text):
+        # Simple hash-based embeddings (no external API)
+        hash_object = hashlib.sha256(text.encode())
+        vector = [int(x) for x in format(int(hash_object.hexdigest(), 16), '032b')]
+        return {"vectors": [[x] for x in vector]}
+```
+
+**rtx_agent.py (modified)**
+```python
+class ReactAgent:
+    # ... existing code ...
+
+    def run(self):
+        while True:
+            task = self.get_task()
+            if task is None:
+                break
+
+            prompt = memory.search_similar(task)
+            final_answer = self.process_task(task, prompt)
+
+            memory.store(task, final_answer)
+
+            # ... existing code ...
+```
+
+Note that I've kept the existing code in `rtx_agent.py` intact and only modified the `run()` method to integrate with the new `qdrant_memory.py`. The `memory` object is assumed to be an instance of the `AgentMemory` class.

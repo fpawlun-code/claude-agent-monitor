@@ -1,0 +1,14 @@
+Merge rtx_agent_v2_extracted.py toolkit into existing rtx_agent.py:
+
+1. Read rtx_agent.py - keep ALL existing code (ReactAgent, CLI, main())
+2. Read rtx_agent_v2_extracted.py - extract new tools
+3. Add to LocalToolkit in rtx_agent.py:
+   - install_dependency(package)
+   - browser_navigate(url), browser_screenshot(url, path), browser_extract(url, selector)
+   - api_call(url, method, data)
+   - download_file(url, path)
+   - learn_tool(name, code)
+4. Fix bugs, ensure Windows compatibility
+5. Output COMPLETE rtx_agent.py with everything working
+
+CRITICAL: Keep existing ReactAgent class, parse_action(), execute_action(), run(), and main() CLI unchanged.

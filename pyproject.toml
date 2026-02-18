@@ -1,0 +1,36 @@
+# ClaudeAgent - Static Analysis Configuration
+
+[tool.black]
+line-length = 120
+target-version = ['py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | __pycache__
+  | \.venv
+  | venv
+  | htmlcov
+  | outputs
+  | autonomous
+)/
+'''
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+# Exclude certain directories
+exclude = [
+    'outputs/',
+    'autonomous/',
+    'htmlcov/',
+    'tests/',
+]
+
+[tool.isort]
+profile = "black"
+line_length = 120

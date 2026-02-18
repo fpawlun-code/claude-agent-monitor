@@ -1,0 +1,26 @@
+TASK: Improve RTX agent ReAct system prompt and parser
+
+PROBLEM: Model (Llama 3 8B) often fails to generate correct action format:
+- Expected: Action: tool_name(arg1="value1", arg2="value2")
+- Actual: Narrative text or wrong format
+
+FIXES NEEDED:
+
+1. Better system prompt:
+   - More explicit examples of correct format
+   - Show 2-3 example ReAct loops
+   - Emphasize EXACT format required
+
+2. Improved action parser:
+   - More flexible regex (handle variations)
+   - Support: Action: tool_name("value") without arg names
+   - Fallback parsing for common patterns
+
+3. Add few-shot examples to prompt:
+   Example 1: Simple task with tool
+   Example 2: Multi-step task
+
+OUTPUT:
+- New system_prompt template with examples
+- Improved parse_action() function
+- Code to update rtx_agent.py

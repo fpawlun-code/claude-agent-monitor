@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Jan Kowalski",
+    "email": "jan.kowalski@example.com",
+    "phone": "123-456-789",
+    "city": "Warsaw"
+  },
+  {
+    "name": "Magdalena Nowak",
+    "email": "magdalena.nowak@example.com",
+    "phone": "987-654-321",
+    "city": "Gdansk"
+  },
+  {
+    "name": "Piotr Szczepanik",
+    "email": "piotr.szczepanik@example.com",
+    "phone": "555-123-456",
+    "city": "Krakow"
+  }
+]

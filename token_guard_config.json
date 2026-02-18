@@ -1,0 +1,19 @@
+{
+  "VIOLATIONS": {
+    "\\bRead\\(": "VIOLATION: Using Read() directly instead of delegate_read()",
+    "\\bBash\\(": "VIOLATION: Using Bash() directly instead of delegate_bash()",
+    "Writing.*lines.*code": "VIOLATION: Writing too much code manually - should delegate to RTX",
+    "pytest.*test_.*test_": "VIOLATION: Running multiple tests - limit to 2 per feature",
+    "grep|find": "VIOLATION: Using grep/find without delegation",
+    "cat <<EOF|echo.*>": "VIOLATION: Creating files with cat/heredoc instead of delegating"
+  },
+  "TOKEN_LIMITS": {
+    "warning": 500,
+    "hard": 1000,
+    "simple_task_max": 500,
+    "medium_task_max": 1000,
+    "complex_task_max": 2000,
+    "absolute_max": 5000
+  },
+  "DESCRIPTION": "Token Guard configuration - monitors Claude Code output for delegation rule violations"
+}

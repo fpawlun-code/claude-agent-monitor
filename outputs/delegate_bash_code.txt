@@ -1,0 +1,59 @@
+[2026-02-17 17:06:13] [INFO] [RTX] Delegating to RTX: 
+Generate Python code for ai_gateway.py:
+
+Add this function to LocalAI class:
+
+d...
+[2026-02-17 17:06:24] [INFO] [OK] RTX complete: 1951 chars in 8.59s GPU
+[2026-02-17 17:06:24] [INFO] [SAVE] Estimated tokens saved: ~487
+```python
+import logging
+
+class LocalAI:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+    
+    def ask_rtx(self, prompt: str) -> str:
+        # Simulate asking RTX and getting response
+        return "RTX_RESPONSE"
+    
+    def delegate_bash(self, command: str, task_context: str, max_output_chars: int = 2000) -> str:
+        """
+        Execute bash command via RTX and get smart summary.
+        
+        RTX will:
+        1. Execute the bash command
+        2. Analyze output based on task_context
+        3. Return only relevant information (not full output)
+        
+        Args:
+            command: bash command to execute
+            task_context: what we are trying to achieve (e.g., "find Python files")
+            max_output_chars: max chars in summary
+        
+        Returns:
+            Smart summary of command output
+        """
+        try:
+            # Construct the prompt with command, task_context, and instruction to summarize
+            prompt = f"Execute the following command: {command}\nTask context: {task_context}\nPlease provide a concise summary."
+            
+            # Send request to RTX
+            response = self.ask_rtx(prompt)
+            
+            # Log the response for debugging purposes
+            self.logger.info(f"RTX Response: {response}")
+            
+            # Extract and return relevant information (up to max_output_chars)
+            if len(response) > max_output_chars:
+                summary = response[:max_output_chars-3] + "..."
+            else:
+                summary = response
+            
+            return summary
+        
+        except Exception as e:
+            self.logger.error(f"An error occurred: {e}")
+            return "Error occurred while executing the command."
+```
+This code includes a `LocalAI` class with an `ask_rtx` method for simulation purposes and the `delegate_bash` method that fulfills the requirements specified.

@@ -1,0 +1,44 @@
+RESEARCH TASK: Find tools/frameworks to build super-intelligent autonomous agent
+
+GOAL: Improve our RTX Agent workflow to maximum autonomy
+
+SEARCH FOR:
+
+1. AI AGENT FRAMEWORKS:
+   - LangChain advanced features (agents, tools, memory)
+   - AutoGPT architecture
+   - BabyAGI task management
+   - Microsoft Autogen
+   - CrewAI multi-agent systems
+   - What are best practices for local autonomous agents?
+
+2. MEMORY SYSTEMS:
+   - Vector databases (ChromaDB, Qdrant, Weaviate - local)
+   - Long-term memory for agents
+   - RAG (Retrieval Augmented Generation) best practices
+
+3. TOOL EXPANSION:
+   - Browser automation beyond Playwright (Selenium Grid, Puppeteer)
+   - Code execution sandboxes (Docker, E2B)
+   - Multi-modal tools (image analysis, OCR, video processing)
+   - API orchestration tools
+
+4. WORKFLOW OPTIMIZATION:
+   - Task queue systems (Celery, Redis)
+   - Async execution patterns
+   - Multi-agent coordination
+   - Self-healing and error recovery
+
+5. SELF-IMPROVEMENT:
+   - Meta-learning frameworks
+   - Tool discovery and auto-installation
+   - Performance monitoring and optimization
+   - Agent evaluation metrics
+
+OUTPUT:
+- Top 10 tools/frameworks we should integrate
+- For each: name, description, how it improves our system, installation command
+- Prioritized by impact (highest first)
+- Concrete next steps to implement
+
+Focus on FREE, LOCAL, OPEN-SOURCE tools (we run on RTX GPU, not cloud).

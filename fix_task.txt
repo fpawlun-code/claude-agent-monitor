@@ -1,0 +1,34 @@
+FIX: Correct Qdrant API usage in memory integration
+
+ERRORS IN PREVIOUS CODE:
+- Wrong: self.client.create_collection("tasks", vectors=True)
+- Wrong: self.client.upsert_vectors(...)
+- Wrong: self.client.search_vectors(...)
+
+CORRECT Qdrant API (qdrant-client):
+```python
+# Create collection
+from qdrant_client.models import Distance, VectorParams
+client.create_collection(
+    collection_name="tasks",
+    vectors_config=VectorParams(size=128, distance=Distance.COSINE)
+)
+
+# Store point
+from qdrant_client.models import PointStruct
+client.upsert(
+    collection_name="tasks",
+    points=[PointStruct(id=1, vector=[0.1, 0.2, ...], payload={"task": "...", "result": "..."})]
+)
+
+# Search
+results = client.search(
+    collection_name="tasks",
+    query_vector=[0.1, 0.2, ...],
+    limit=3
+)
+```
+
+TASK: Rewrite qdrant_memory.py with CORRECT API + integration code for rtx_agent.py
+
+Use 128-dim vectors from simple text hash (consistent hashing, not random).

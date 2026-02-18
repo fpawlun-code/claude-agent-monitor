@@ -1,0 +1,13 @@
+Create Windows service/scheduled task for RTX agent 24/7:
+
+1. Python script: rtx_service.py
+   - Watches C:\ClaudeAgent\tasks\ folder
+   - When task.json appears, execute with rtx_agent.py
+   - Save result to results/
+   - Loop forever
+
+2. Windows Task Scheduler XML or Python Windows Service
+   - Run rtx_service.py at startup
+   - Restart on failure
+
+Output complete rtx_service.py code.

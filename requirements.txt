@@ -1,4 +1,16 @@
 # Python dependencies for ClaudeAgent
 # Install: pip install -r requirements.txt
 
+# Core - required for ai_gateway.py and rtx_agent.py
 requests>=2.31.0
+
+# Phase 1: Memory & Knowledge - REQUIRED
+langchain>=0.1.0
+langchain-community>=0.0.20
+ollama>=0.1.0
+qdrant-client>=1.7.0
+sentence-transformers>=2.2.0  # Local embeddings (no API costs)
+
+# Optional: Web automation
+# playwright>=1.40.0
+# duckduckgo-search>=4.0.0

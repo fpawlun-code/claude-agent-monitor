@@ -1,0 +1,18 @@
+Implement Phase 1: Memory + LangChain into rtx_agent.py
+
+REQUIREMENTS:
+1. Create qdrant_memory.py:
+   - QdrantMemoryStore class
+   - Methods: store_task(task, result), search_similar(query, top_k=3), get_all()
+   - Use qdrant-client, local storage in C:\ClaudeAgent\memory\
+
+2. Integrate into rtx_agent.py:
+   - Add to ReactAgent.__init__: self.memory = QdrantMemoryStore()
+   - After task completion: auto-store task+result in memory
+   - Before new task: search similar past tasks, inject into context
+
+3. LangChain tools wrapper:
+   - Wrap LocalToolkit tools as LangChain tools
+   - Enable LangChain agent mode (optional fallback)
+
+OUTPUT: Complete working code, installation commands, test script.

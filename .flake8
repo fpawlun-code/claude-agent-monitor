@@ -1,0 +1,18 @@
+[flake8]
+max-line-length = 120
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    htmlcov,
+    .coverage,
+    *.egg-info,
+    outputs,
+    autonomous
+
+# Ignore certain warnings
+ignore = E203,E501,W503,E722
+
+# McCabe complexity
+max-complexity = 15

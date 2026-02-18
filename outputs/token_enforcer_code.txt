@@ -1,0 +1,104 @@
+[2026-02-17 17:48:19] [INFO] [RTX] Delegating to RTX: 
+Create token_enforcer.py script:
+
+Features:
+1. Monitor Claude API token usage i...
+[2026-02-17 17:48:47] [INFO] [OK] RTX complete: 3876 chars in 25.16s GPU
+[2026-02-17 17:48:47] [INFO] [SAVE] Estimated tokens saved: ~969
+Certainly! Below is a Python script named `token_enforcer.py` that meets the specified requirements. This script includes functions for checking the token budget, reporting usage, and a command-line interface (CLI) tool to set the budget.
+
+```python
+import argparse
+from datetime import datetime
+
+class TokenEnforcer:
+    def __init__(self):
+        self.budget = 1000  # Default budget in tokens
+        self.violations_log = "token_violations.log"
+
+    def check_budget(self, current_tokens: int, limit: int) -> bool:
+        """Check if the current token usage is within the set budget."""
+        return current_tokens <= limit
+
+    def report_usage(self, start_time: datetime, end_time: datetime) -> dict:
+        """Report the API usage in terms of tokens used between two timestamps."""
+        duration = (end_time - start_time).total_seconds()
+        # For simplicity, we assume a constant token consumption rate
+        tokens_used = 1000 / 60 * duration  # Assuming 1000 tokens per minute
+        return {
+            "start_time": start_time,
+            "end_time": end_time,
+            "tokens_used": tokens_used
+        }
+
+    def enforce_budget(self, current_tokens: int):
+        """Enforce the budget by checking and logging violations."""
+        if not self.check_budget(current_tokens, self.budget):
+            print("ERROR: Token usage exceeded the budget.")
+            with open(self.violations_log, "a") as log_file:
+                log_file.write(f"Violation at {datetime.now()}: Exceeded token limit.\n")
+            raise ValueError("Token usage exceeded the budget.")
+
+    def set_budget(self, new_budget):
+        """Set a new budget for API token usage."""
+        self.budget = new_budget
+        print(f"Budget updated to: {self.budget} tokens")
+
+def main():
+    parser = argparse.ArgumentParser(description="Monitor Claude API token usage.")
+    parser.add_argument("--set-budget", type=int, help="Set the per-response budget in tokens")
+    args = parser.parse_args()
+
+    enforcer = TokenEnforcer()
+
+    if args.set_budget:
+        enforcer.set_budget(args.set_budget)
+        return
+
+    # Simulate token usage
+    start_time = datetime.now()
+    current_tokens = 800  # Simulated current token usage
+
+    try:
+        enforcer.enforce_budget(current_tokens)
+        print("Token usage is within the budget.")
+    except ValueError as e:
+        print(e)
+
+    # Report usage for demonstration purposes
+    end_time = datetime.now()
+    report = enforcer.report_usage(start_time, end_time)
+    print(f"Usage reported: {report}")
+
+if __name__ == "__main__":
+    main()
+```
+
+### Explanation:
+
+1. **Class `TokenEnforcer`**:
+   - **Initialization**: Sets the default budget to 1000 tokens.
+   - **check_budget(current_tokens, limit=1000) -> bool**: Checks if the current token usage is within the set budget.
+   - **report_usage(start_time: datetime, end_time: datetime) -> dict**: Reports the API usage in terms of tokens used between two timestamps. For simplicity, it assumes a constant consumption rate (1000 tokens per minute).
+   - **enforce_budget(current_tokens)**: Enforces the budget by checking and logging violations.
+   - **set_budget(new_budget)**: Sets a new budget for API token usage.
+
+2. **CLI Tool**:
+   - The script uses `argparse` to handle command-line arguments, allowing users to set a new budget using the `--set-budget` option.
+
+3. **Main Function**:
+   - Simulates token usage and enforces the budget.
+   - Reports usage for demonstration purposes.
+
+### Usage:
+
+To run this script with a custom budget:
+```sh
+python token_enforcer.py --set-budget 1500
+```
+
+This will set the budget to 1500 tokens. If you do not provide any arguments, it will simulate token usage and enforce the default budget of 1000 tokens.
+
+### Logging Violations:
+
+All violations are logged to `token_violations.log` in the current directory.

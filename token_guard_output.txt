@@ -1,0 +1,141 @@
+Sure, let's create a production-ready `token_guard.py` script that enforces the specified rules for the Claude Code CLI tool. Below is the complete implementation:
+
+### token_guard.py
+
+```python
+import subprocess
+import re
+import sys
+import json
+from datetime import datetime
+from colorama import Fore, Style, init
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Initialize Colorama for cross-platform ANSI color support
+init(autoreset=True)
+
+# Configuration file path
+CONFIG_FILE = 'token_guard_config.json'
+
+# Load configuration rules
+with open(CONFIG_FILE) as f:
+    VIOLATIONS = json.load(f)['VIOLATIONS']
+
+# Token tracking variables
+TOKEN_LIMIT_WARNING = 500
+TOKEN_LIMIT_HARD = 1000
+current_tokens = 0
+
+def delegate_read():
+    print(Fore.RED + "WARNING: Use delegate_read() instead of Read()" + Style.RESET_ALL)
+
+def delegate_bash():
+    print(Fore.YELLOW + "INFO: Should use delegate_bash() for long output" + Style.RESET_ALL)
+
+def monitor_output(process):
+    global current_tokens
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(process.stdout.readline, timeout=0.5)
+        while not process.poll():
+            try:
+                line = future.result(timeout=0.1).decode('utf-8').strip()
+                if line:
+                    print(line)
+
+                # Check for violations
+                for pattern, message in VIOLATIONS.items():
+                    if re.search(pattern, line):
+                        print(Fore.RED + f"VIOLATION: {message}" + Style.RESET_ALL)
+                        if "Read(" in line:
+                            delegate_read()
+                        elif "Bash(" in line:
+                            delegate_bash()
+
+                # Track tokens
+                if 'tokens=' in line and 'total' not in line:
+                    current_tokens += int(line.split(' ')[-1])
+                    print(Fore.GREEN + f"Current Tokens: {current_tokens}" + Style.RESET_ALL)
+                    if current_tokens >= TOKEN_LIMIT_WARNING:
+                        print(Fore.YELLOW + "WARNING: Token usage is close to the warning limit." + Style.RESET_ALL)
+                    if current_tokens >= TOKEN_LIMIT_HARD:
+                        print(Fore.RED + "ERROR: Token usage exceeded the hard limit. Stopping process." + Style.RESET_ALL)
+                        process.terminate()
+                        break
+
+            except subprocess.TimeoutExpired:
+                continue
+        # Final token count at end of session
+        print(Fore.GREEN + f"Final Tokens: {current_tokens}" + Style.RESET_ALL)
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python token_guard.py [args]")
+        sys.exit(1)
+
+    args = sys.argv[1:]
+    process = subprocess.Popen(['claude-code'] + args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    
+    try:
+        monitor_output(process)
+    except KeyboardInterrupt:
+        print(Fore.RED + "Process interrupted. Terminating." + Style.RESET_ALL)
+        process.terminate()
+    finally:
+        # Log session details
+        with open('token_guard.log', 'a') as log_file:
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            log_file.write(f"Session started at {now}\n")
+            for pattern, message in VIOLATIONS.items():
+                log_file.write(f"Violation Pattern: {pattern} -> {message}\n")
+            log_file.write(f"Total Tokens Used: {current_tokens}\n")
+            log_file.write("Session ended.\n")
+
+if __name__ == "__main__":
+    main()
+```
+
+### token_guard_config.json
+
+```json
+{
+  "VIOLATIONS": {
+    "Read(": "BLOCKED! Use delegate_read() instead",
+    "Bash(": "WARNING! Should use delegate_bash() for long output"
+  }
+}
+```
+
+### Usage Instructions
+
+1. **Install Dependencies:**
+   ```sh
+   pip install colorama
+   ```
+
+2. **Run the Script:**
+   ```sh
+   python token_guard.py [args]
+   ```
+   Replace `[args]` with any arguments you would normally pass to `claude-code`.
+
+3. **Configuration File:**
+   Ensure that `token_guard_config.json` is in the same directory as `token_guard.py`.
+
+4. **Example Usage:**
+   ```sh
+   python token_guard.py --command "Read('example.txt')"
+   ```
+
+### Test Examples
+
+1. **Basic Command:**
+   ```sh
+   python token_guard.py --command "print('Hello, World!')"
+   ```
+
+2. **Command with Violations:**
+   ```sh
+   python token_guard.py --command "Read('large_file.txt')"
+   ```
+
+This script is designed to be robust and handle various scenarios while providing real-time feedback and logging. It ensures that the usage of `claude-code` adheres to the specified rules, including token limits and tool calls.

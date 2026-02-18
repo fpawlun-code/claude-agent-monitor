@@ -1,0 +1,18 @@
+Add Playwright browser automation to LocalToolkit in rtx_agent.py:
+
+NEW TOOLS (with FULL working implementation):
+
+1. browser_screenshot(url, save_path):
+   - Use Playwright to screenshot webpage
+   - Full code: launch browser, navigate, capture, save, close
+
+2. install_dependency(package_name):
+   - subprocess.run(["pip", "install", package_name])
+   - Return success/error
+
+3. api_call(url, method="GET", data=None):
+   - Use requests library
+   - Support GET, POST
+   - Return response.text
+
+Keep all existing tools working. Output ONLY the new tool methods code (Python functions).

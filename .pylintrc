@@ -1,0 +1,35 @@
+[MASTER]
+# Python version
+py-version=3.12
+
+# Use multiple processes for faster linting
+jobs=4
+
+[MESSAGES CONTROL]
+# Disable certain warnings for ClaudeAgent
+disable=
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    R0913,  # too-many-arguments
+    R0914,  # too-many-locals
+    W0703,  # broad-except
+    C0103,  # invalid-name
+    R0801,  # duplicate-code
+
+[FORMAT]
+# Maximum line length
+max-line-length=120
+
+# Allow __init__.py to be empty
+init-hook='import sys; sys.path.append(".")'
+
+[DESIGN]
+# Complexity limits
+max-complexity=15
+max-attributes=10
+max-public-methods=20
+
+[SIMILARITIES]
+# Minimum lines number of a similarity
+min-similarity-lines=10

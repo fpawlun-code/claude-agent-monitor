@@ -1,0 +1,41 @@
+TASK: Integrate Qdrant memory into existing rtx_agent.py (PRODUCTION-READY)
+
+CONTEXT:
+- rtx_agent.py exists with ReactAgent class, LocalToolkit, CLI
+- Qdrant DB initialized at C:\ClaudeAgent\memory\
+
+REQUIREMENTS:
+
+1. Create qdrant_memory.py:
+```python
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct
+import hashlib, json
+
+class AgentMemory:
+    def __init__(self, path="./memory"):
+        self.client = QdrantClient(path=path)
+        self._ensure_collection()
+
+    def _ensure_collection(self):
+        # Create collection if not exists
+        # Use simple hash-based embeddings (no external API)
+
+    def store(self, task, result):
+        # Store task + result with hash-based vector
+
+    def search_similar(self, query, limit=3):
+        # Find similar past tasks
+        # Return list of {task, result}
+```
+
+2. Modify rtx_agent.py ReactAgent.run():
+   - BEFORE task: memory.search_similar(task) → inject into prompt
+   - AFTER task: memory.store(task, final_answer)
+   - Keep all existing code working
+
+3. Simple hash embeddings (no OpenAI API):
+   - Use hashlib to create vectors from text
+   - No external dependencies
+
+OUTPUT: Complete qdrant_memory.py + exact code changes for rtx_agent.py

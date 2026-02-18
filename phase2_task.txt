@@ -1,0 +1,25 @@
+Phase 2: Multi-Agent System with CrewAI
+
+Create crew_agents.py:
+
+1. Three specialized agents:
+   - ResearcherAgent: web search, data gathering, analysis
+   - CoderAgent: code generation, debugging
+   - TesterAgent: validation, testing, QA
+
+2. Use CrewAI framework:
+   - Define agents with roles, goals, tools
+   - Create tasks that auto-delegate to appropriate agent
+   - Coordinator delegates based on task type
+
+3. Integration:
+   - CLI: python crew_agents.py --task "build X"
+   - Auto-detect task type → route to specialist
+   - Agents collaborate, share results
+
+4. Tools per agent:
+   - Researcher: web_search, api_call, browser_screenshot
+   - Coder: read_file, write_file, execute_shell
+   - Tester: execute_shell, read_file
+
+Output: Complete crew_agents.py + usage examples

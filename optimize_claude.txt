@@ -1,0 +1,39 @@
+TASK: Optimize Claude's workflow to use MINIMAL tokens
+
+PROBLEM: Claude still wastes tokens on:
+- Writing documentation manually (should delegate)
+- Long responses (should be ultra-concise)
+- Multiple Read/Edit operations (should batch or delegate)
+- Explaining instead of doing
+
+GOAL: Create system where Claude uses <500 tokens per user request
+
+SOLUTIONS TO IMPLEMENT:
+
+1. AUTO-RESPONDER TEMPLATES:
+   Create templates/shortcuts for common responses
+   Example: Instead of long explanation → just "[DELEGATED] Task X → RTX → results.txt"
+
+2. BATCH OPERATIONS:
+   Instead of: Read file A, Read file B, Read file C (3 calls)
+   Do: One delegation to RTX: "Read A, B, C and summarize"
+
+3. DOCUMENTATION AUTO-GENERATION:
+   Never write .md files manually
+   Always: delegate_to_rtx("Create documentation for X")
+
+4. RESPONSE COMPRESSION:
+   Ultra-short responses: "✅ Done. Results: [file]. Next?"
+   No explanations unless asked
+
+5. SMART DELEGATION RULES:
+   Auto-detect: if task requires >200 tokens → delegate to RTX
+   Create pre-flight check script that Claude runs before doing anything
+
+OUTPUT:
+- Python script: claude_optimizer.py
+- Templates for ultra-short responses
+- Auto-delegation rules
+- Pre-flight check system
+
+Make it so Claude becomes just a thin coordinator using <200 tokens per response.

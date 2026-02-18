@@ -1,0 +1,96 @@
+Here are the requested improvements:
+
+**New System Prompt Template**
+
+```
+ReAct System Prompt:
+Generate an action in the exact format: Action: tool_name(arg1="value1", arg2="value2")
+
+Examples of correct ReAct loops:
+
+1. Loop 1:
+Action: hammer(hit=true, force=5)
+Action: saw(cut=true, speed=3)
+
+2. Loop 2:
+Action: drill(bit_size=10, speed=4)
+Action: screwdriver(tighten=true, torque=20)
+
+Emphasizing the exact format required:
+
+* Use the exact format: Action: tool_name(arg1="value1", arg2="value2")
+* No narrative text or wrong formats allowed!
+
+Provide a few-shot example to prompt:
+Example 1: Simple task with tool
+Action: wrench(tighten=true, torque=15)
+
+Example 2: Multi-step task
+Action: drill(bit_size=8)
+Action: screwdriver(tighten=true, torque=20)
+```
+
+**Improved Parse Action Function**
+
+Here's the updated `parse_action()` function:
+```python
+import re
+
+def parse_action(action_text):
+    # Regular expression to match action format
+    pattern = r"Action: (.*?)(\(([^)]+)\))?"
+    
+    match = re.match(pattern, action_text)
+    
+    if match:
+        tool_name = match.group(1).strip()
+        args = {}
+        
+        if match.group(2):
+            arg_str = match.group(2)[1:-1].split(", ")
+            for arg in arg_str:
+                key, value = arg.split("=")
+                args[key] = value.strip('"')
+        
+        return {"tool_name": tool_name, "args": args}
+    
+    # Fallback parsing for common patterns
+    elif re.match(r"Action: (.*)", action_text):
+        return {"tool_name": match.group(1).strip()}
+    
+    else:
+        raise ValueError("Invalid action format")
+```
+
+**Code to Update rtx_agent.py**
+
+Here's the updated code in `rtx_agent.py`:
+```python
+import re
+
+def parse_action(action_text):
+    # ... (updated function above)
+
+def generate_action():
+    prompt = "ReAct System Prompt: ... (new system prompt template above)"
+    
+    # Call LLaMA 3 8B model to generate action
+    response = llama_model.generate(prompt)
+    
+    # Parse the generated action using parse_action() function
+    try:
+        action_data = parse_action(response)
+        return action_data
+    except ValueError as e:
+        print(f"Error parsing action: {e}")
+        return None
+
+# Example usage:
+action_data = generate_action()
+if action_data:
+    tool_name = action_data["tool_name"]
+    args = action_data["args"]
+    print(f"Action: {tool_name}({', '.join([f'{key}="{value}"' for key, value in args.items()])})")
+```
+
+These updates should help improve the ReAct system prompt and parser to generate correct actions in the exact format required.
