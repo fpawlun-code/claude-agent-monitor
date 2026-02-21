@@ -1,0 +1,24 @@
+{
+  "phase": "1 - Pierwsze pieniądze",
+  "useme": {
+    "profile_pct": 65,
+    "bio_done": true,
+    "categories_done": false,
+    "availability_done": false,
+    "portfolio_items": 0,
+    "bids_sent": 0,
+    "bids_responded": 0
+  },
+  "olx": {
+    "ad_posted": false
+  },
+  "monitor": {
+    "github_actions_active": false,
+    "telegram_configured": false
+  },
+  "earnings": {
+    "total_pln": 0,
+    "completed_projects": 0
+  },
+  "updated": "2026-02-21"
+}

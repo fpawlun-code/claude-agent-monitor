@@ -1,0 +1,54 @@
+name: Job Monitor (Useme + OLX)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # co 15 minut, 24/7, GRATIS na GitHub Actions
+  workflow_dispatch:           # ręczne uruchomienie do testów
+
+permissions:
+  contents: write              # potrzebne do commitu seen_ids.json
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-monitor-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run Useme Monitor
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python useme_monitor.py
+
+      - name: Run OLX Monitor
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python olx_monitor.py
+
+      - name: Save seen IDs (commit back to repo)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add seen_ids_useme.json seen_ids_olx.json || true
+          git diff --staged --quiet || git commit -m "chore: update seen_ids [skip ci]"
+          git push || true

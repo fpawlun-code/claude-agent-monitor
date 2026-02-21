@@ -11,6 +11,9 @@ ollama>=0.1.0
 qdrant-client>=1.7.0
 sentence-transformers>=2.2.0  # Local embeddings (no API costs)
 
+# Monitor ofert (useme_monitor.py, olx_monitor.py)
+beautifulsoup4>=4.12.0
+
 # Optional: Web automation
 # playwright>=1.40.0
 # duckduckgo-search>=4.0.0
