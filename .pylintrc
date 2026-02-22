@@ -25,8 +25,7 @@ max-line-length=120
 init-hook='import sys; sys.path.append(".")'
 
 [DESIGN]
-# Complexity limits
-max-complexity=15
+# Design limits
 max-attributes=10
 max-public-methods=20
 

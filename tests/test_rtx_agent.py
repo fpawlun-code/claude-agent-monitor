@@ -2,7 +2,8 @@
 Test suite for rtx_agent.py
 Tests ReAct agent and LocalToolkit with mocked operations
 """
-from unittest.mock import MagicMock, mock_open, patch
+
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -55,12 +56,7 @@ class TestLocalToolkit:
 
     def test_execute_shell_dangerous_command_blocked(self, toolkit):
         """Test that dangerous commands are blocked"""
-        dangerous_commands = [
-            "rm -rf /",
-            "del /s *",
-            "format c:",
-            "shutdown -h now"
-        ]
+        dangerous_commands = ["rm -rf /", "del /s *", "format c:", "shutdown -h now"]
 
         for cmd in dangerous_commands:
             result = toolkit.execute_shell(cmd)
@@ -69,7 +65,7 @@ class TestLocalToolkit:
 
     def test_web_search_basic(self, toolkit):
         """Test web search functionality"""
-        with patch('requests.get') as mock_get:
+        with patch("requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.text = "Mock search results"
             mock_response.status_code = 200
@@ -131,23 +127,22 @@ class TestSafety:
 
     def test_dangerous_commands_blocked(self, toolkit):
         """Test all dangerous commands are blocked"""
-        dangerous_patterns = [
-            "rm -rf /",
-            "del /s *",
-            "format c:",
-            "shutdown -h now",
-            ":(){ :|:& };:"  # Fork bomb
-        ]
+        dangerous_patterns = ["rm -rf /", "del /s *", "format c:", "shutdown -h now", ":(){ :|:& };:"]  # Fork bomb
 
         for pattern in dangerous_patterns:
             result = toolkit.execute_shell(pattern)
             # Should be blocked or return an error
-            assert "blocked" in result.lower() or "denied" in result.lower() or "not allowed" in result.lower() or "error" in result.lower()
+            assert (
+                "blocked" in result.lower()
+                or "denied" in result.lower()
+                or "not allowed" in result.lower()
+                or "error" in result.lower()
+            )
 
     def test_shell_timeout(self, toolkit):
         """Test shell command timeout (30s)"""
         # Mock a long-running command
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_run.side_effect = TimeoutError("Command timed out")
 
             result = toolkit.execute_shell("sleep 100")
@@ -183,4 +178,5 @@ class TestIntegration:
 # Placeholder for advanced tests
 class TestAdvancedReAct:
     """Advanced ReAct loop tests - TO BE IMPLEMENTED"""
+
     pass

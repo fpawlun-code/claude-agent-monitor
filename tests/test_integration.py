@@ -2,6 +2,7 @@
 Integration tests for ClaudeAgent system
 Tests end-to-end workflows: Claude → RTX → Result
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -16,11 +17,9 @@ class TestEndToEndDelegation:
     @pytest.fixture
     def mock_ollama_api(self):
         """Mock Ollama API for integration tests"""
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = MagicMock()
-            mock_response.json.return_value = {
-                "response": "Integration test response"
-            }
+            mock_response.json.return_value = {"response": "Integration test response"}
             mock_response.status_code = 200
             mock_post.return_value = mock_response
             yield mock_post
@@ -46,7 +45,7 @@ class TestEndToEndDelegation:
         mock_agent.run.return_value = {"success": True, "final_answer": "Important data found"}
         mock_react_module = MagicMock()
         mock_react_module.ReactAgent = MagicMock(return_value=mock_agent)
-        with patch.dict('sys.modules', {'rtx_agent': mock_react_module}):
+        with patch.dict("sys.modules", {"rtx_agent": mock_react_module}):
             result = delegate_read(str(test_file), "extract important information")
 
         assert result is not None
@@ -58,7 +57,7 @@ class TestEndToEndDelegation:
         mock_agent.run.return_value = {"success": True, "final_answer": "echo test runs echo"}
         mock_react_module = MagicMock()
         mock_react_module.ReactAgent = MagicMock(return_value=mock_agent)
-        with patch.dict('sys.modules', {'rtx_agent': mock_react_module}):
+        with patch.dict("sys.modules", {"rtx_agent": mock_react_module}):
             result = delegate_bash("echo test", "explain this command")
 
         assert result is not None
@@ -69,11 +68,9 @@ class TestLocalAIIntegration:
 
     @pytest.fixture
     def mock_ollama(self):
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = MagicMock()
-            mock_response.json.return_value = {
-                "message": {"content": "LocalAI response"}
-            }
+            mock_response.json.return_value = {"message": {"content": "LocalAI response"}}
             mock_response.status_code = 200
             mock_post.return_value = mock_response
             yield mock_post
@@ -100,6 +97,10 @@ class TestLocalAIIntegration:
         # Second request (should use cache)
         result2 = ai.ask_rtx("Same prompt")
         call_count_2 = mock_ollama.call_count
+
+        assert result1 is not None
+        assert result2 is not None
+        assert call_count_2 >= call_count_1
 
         # Cache should prevent second API call
         # (depending on implementation, this may or may not be the case)
@@ -136,7 +137,7 @@ class TestErrorHandlingIntegration:
     @pytest.fixture
     def mock_failing_api(self):
         """Mock failing Ollama API"""
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_post.side_effect = Exception("API connection failed")
             yield mock_post
 
@@ -165,11 +166,9 @@ class TestPerformanceIntegration:
 
     @pytest.fixture
     def mock_ollama(self):
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = MagicMock()
-            mock_response.json.return_value = {
-                "message": {"content": "Response"}
-            }
+            mock_response.json.return_value = {"message": {"content": "Response"}}
             mock_response.status_code = 200
             mock_post.return_value = mock_response
             yield mock_post
@@ -192,7 +191,7 @@ class TestPerformanceIntegration:
 
         # First call
         ai.ask_rtx("Cached prompt")
-        first_call_count = mock_ollama.call_count
+        assert mock_ollama.call_count >= 1
 
         # Subsequent calls with same prompt
         for _ in range(3):

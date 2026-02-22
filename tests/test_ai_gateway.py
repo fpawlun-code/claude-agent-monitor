@@ -2,7 +2,8 @@
 Test suite for ai_gateway.py
 Tests delegation functions with mocked Ollama API
 """
-from unittest.mock import MagicMock, Mock, patch
+
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -15,13 +16,13 @@ class TestDelegation:
     @pytest.fixture
     def mock_requests(self):
         """Mock HTTP requests to Ollama API"""
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = MagicMock()
             mock_response.json.return_value = {
                 "model": "qwen2.5:7b",
                 "created_at": "2024-01-01T00:00:00Z",
                 "response": "Mock RTX response",
-                "done": True
+                "done": True,
             }
             mock_response.status_code = 200
             mock_post.return_value = mock_response
@@ -38,10 +39,7 @@ class TestDelegation:
 
     def test_delegate_to_rtx_with_role(self, mock_requests):
         """Test delegation with custom role"""
-        result = delegate_to_rtx(
-            "Write code",
-            role="expert Python developer"
-        )
+        result = delegate_to_rtx("Write code", role="expert Python developer")
 
         assert result is not None
         # Verify role was included in system message
@@ -75,11 +73,9 @@ class TestCaching:
     @pytest.fixture
     def mock_requests(self):
         """Mock HTTP requests"""
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = MagicMock()
-            mock_response.json.return_value = {
-                "message": {"content": "Cached response"}
-            }
+            mock_response.json.return_value = {"message": {"content": "Cached response"}}
             mock_response.status_code = 200
             mock_post.return_value = mock_response
             yield mock_post
@@ -98,9 +94,11 @@ class TestCaching:
 # Placeholder for more tests - will be added by RTX in next iteration
 class TestAdvancedDelegation:
     """Advanced delegation tests - TO BE IMPLEMENTED"""
+
     pass
 
 
 class TestBatchOperations:
     """Batch operation tests - TO BE IMPLEMENTED"""
+
     pass
