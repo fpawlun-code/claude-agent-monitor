@@ -82,68 +82,75 @@ def is_relevant(text: str) -> bool:
 
 async def scrape_useme_playwright() -> list[dict]:
     """Scrape Useme używając Playwright z sesją lub bez."""
-    from playwright.async_api import async_playwright
+    try:
+        from playwright.async_api import async_playwright
+    except Exception as e:
+        print(f"[ERR] Playwright import failed: {e}")
+        return []
 
     offers = []
-
-    async with async_playwright() as p:
-        # Użyj istniejącej sesji jeśli jest dostępna
-        use_session = SESSION_DIR.exists() and any(SESSION_DIR.iterdir())
-
-        if use_session:
-            context = await p.chromium.launch_persistent_context(
-                str(SESSION_DIR),
-                headless=False,  # headful — omija Cloudflare
-                args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            )
-            page = context.pages[0] if context.pages else await context.new_page()
-        else:
-            browser = await p.chromium.launch(
-                headless=False,
-                args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
-            )
-            context = await browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-                locale="pl-PL",
-            )
-            page = await context.new_page()
-
-        for url in URLS[:3]:  # Sprawdzamy pierwsze 3 URL-e
-            try:
-                await page.goto(url, wait_until="domcontentloaded", timeout=25000)
-                await asyncio.sleep(8)  # Poczekaj na JS + Cloudflare
-
-                # Zbierz wszystkie linki do ofert — format: /pl/jobs/slug-tytul,ID/
-                links = await page.eval_on_selector_all(
-                    'a[href*="/pl/jobs/"]',
-                    'els => els.map(el => ({href: el.getAttribute("href"), text: el.innerText.trim()}))'
+    ci_mode = os.environ.get("GITHUB_ACTIONS") == "true" or os.environ.get("CI") == "true"
+    use_session = (not ci_mode) and SESSION_DIR.exists() and any(SESSION_DIR.iterdir())
+    headless_mode = ci_mode
+    try:
+        async with async_playwright() as p:
+            if use_session:
+                context = await p.chromium.launch_persistent_context(
+                    str(SESSION_DIR),
+                    headless=headless_mode,
+                    args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
                 )
+                page = context.pages[0] if context.pages else await context.new_page()
+            else:
+                browser = await p.chromium.launch(
+                    headless=headless_mode,
+                    args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
+                )
+                context = await browser.new_context(
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+                    locale="pl-PL",
+                )
+                page = await context.new_page()
 
-                for link in links:
-                    href = link.get("href", "") or ""
-                    # URL format: /pl/jobs/slug-tytul,ID/ — ID po przecinku
-                    m = re.search(r"/pl/jobs/[^,]+,(\d+)/$", href)
-                    if not m:
-                        continue
-                    offer_id = m.group(1)
-                    title = link.get("text", "").strip()
-                    if len(title) < 5:
-                        continue
-                    offers.append({
-                        "id": offer_id,
-                        "title": title[:120],
-                        "url": href.split("?")[0],
-                        "budget": "",
-                        "deadline": "",
-                    })
+            for url in URLS[:3]:  # Sprawdzamy pierwsze 3 URL-e
+                try:
+                    await page.goto(url, wait_until="domcontentloaded", timeout=25000)
+                    await asyncio.sleep(8)  # Poczekaj na JS + Cloudflare
 
-                print(f"[INFO] Useme {url}: {len(links)} linków")
+                    # Zbierz wszystkie linki do ofert — format: /pl/jobs/slug-tytul,ID/
+                    links = await page.eval_on_selector_all(
+                        'a[href*="/pl/jobs/"]',
+                        'els => els.map(el => ({href: el.getAttribute("href"), text: el.innerText.trim()}))'
+                    )
 
-            except Exception as e:
-                print(f"[ERR] Useme {url}: {e}")
+                    for link in links:
+                        href = link.get("href", "") or ""
+                        # URL format: /pl/jobs/slug-tytul,ID/ — ID po przecinku
+                        m = re.search(r"/pl/jobs/[^,]+,(\d+)/$", href)
+                        if not m:
+                            continue
+                        offer_id = m.group(1)
+                        title = link.get("text", "").strip()
+                        if len(title) < 5:
+                            continue
+                        offers.append({
+                            "id": offer_id,
+                            "title": title[:120],
+                            "url": href.split("?")[0],
+                            "budget": "",
+                            "deadline": "",
+                        })
 
-        await context.close()
+                    print(f"[INFO] Useme {url}: {len(links)} linków")
+
+                except Exception as e:
+                    print(f"[ERR] Useme {url}: {e}")
+
+            await context.close()
+    except Exception as e:
+        print(f"[ERR] Playwright runtime failed: {e}")
+        return []
 
     # Deduplikacja po ID
     seen = set()

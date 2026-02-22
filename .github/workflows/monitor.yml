@@ -31,21 +31,38 @@ jobs:
           key: pip-monitor-${{ hashFiles('requirements.txt') }}
 
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: |
+          pip install requests beautifulsoup4 playwright
+          python -m playwright install --with-deps chromium
 
       - name: Run Useme Monitor
+        id: useme_monitor
+        continue-on-error: true
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python useme_monitor.py
 
       - name: Run OLX Monitor
+        id: olx_monitor
+        continue-on-error: true
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python olx_monitor.py
 
+      - name: Validate monitor outcome
+        if: always()
+        run: |
+          echo "Useme outcome: ${{ steps.useme_monitor.outcome }}"
+          echo "OLX outcome:   ${{ steps.olx_monitor.outcome }}"
+          if [ "${{ steps.useme_monitor.outcome }}" = "failure" ] && [ "${{ steps.olx_monitor.outcome }}" = "failure" ]; then
+            echo "Both monitors failed."
+            exit 1
+          fi
+
       - name: Save seen IDs (commit back to repo)
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
